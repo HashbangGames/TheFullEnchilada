@@ -1,0 +1,10 @@
+bin
+gen
+/*.suo
+/*.csproj
+/*.sln
+obj
+Library
+Builds
+TAGENIGMA Toolbox
+/Assets/TAGENIGMA Toolbox.meta
