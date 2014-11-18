@@ -1,11 +1,15 @@
-package com.hbg.thefullenchilada;
+package com.hbg.thefullenchilada.IAP;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.unity3d.player.UnityPlayer;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -139,5 +143,51 @@ public class GoogleIAPResponseHandler {
 			Log.i(TAG,"Default case for billingResponse");
 			return false;		
 		}
+	}
+
+	public static void handleOnActivityResult(int requestCode, int resultCode, Intent data, Map<String,Object> variableStorage){
+		int rCodeComparer = (Integer) variableStorage.get("PurchaseRequestCode");
+		if (requestCode == rCodeComparer) {
+			
+			variableStorage.remove("PurchaseRequestCode");
+			String developerPayload = data.getStringExtra("developerPayload");
+			String storedDeveloperPayload = (String) variableStorage.get("DeveloperPayload");
+			Log.i(TAG,developerPayload);
+			Log.i(TAG,storedDeveloperPayload);
+			if( developerPayload == storedDeveloperPayload ){
+				int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
+				String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
+				String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
+				if (resultCode == android.app.Activity.RESULT_OK) {
+				   try {
+					  ResponseObject rObject = new ResponseObject(); 
+				      JSONObject jo = new JSONObject(purchaseData);
+				      jo.put("RESPONSE_CODE", responseCode);
+				      jo.put("INAPP_DATA_SIGNATURE", dataSignature);
+				      
+				      rObject.put("Success", true);
+				      rObject.put("PurchaseData", jo);
+				      
+				      UnityPlayer.UnitySendMessage("EnchiladaManager", "OnPurchaseItem", rObject.toString());
+				    }
+				    catch (JSONException e) {
+				       e.printStackTrace();
+				       ResponseObject rObject = new ResponseObject();
+				       try{
+				    	   rObject.put("Success", false);
+				    	   rObject.put("Error", e.getMessage());
+				    	   UnityPlayer.UnitySendMessage("EnchiladaManager", "OnPurchaseItem", rObject.toString());
+				       }catch(JSONException je){
+				    	   je.printStackTrace();
+				       }
+				    }
+				}
+				
+			}else{
+				Log.i(TAG,"Developer Payload mismatch.");
+			}
+		}else{
+			Log.i(TAG,"Request code mismatch");
+		}		
 	}
 }

@@ -1,4 +1,4 @@
-package com.hbg.thefullenchilada;
+package com.hbg.thefullenchilada.IAP;
 
 public enum BillingResponseCodes {
 	BILLING_RESPONSE_RESULT_OK,
