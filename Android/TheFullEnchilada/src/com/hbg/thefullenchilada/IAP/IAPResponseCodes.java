@@ -1,6 +1,6 @@
 package com.hbg.thefullenchilada.IAP;
 
-public enum BillingResponseCodes {
+public enum IAPResponseCodes {
 	BILLING_RESPONSE_RESULT_OK,
 	BILLING_RESPONSE_RESULT_USER_CANCELED,
 	BILLING_RESPONSE_RESULT_SERVICE_UNAVAILABLE,
@@ -11,7 +11,7 @@ public enum BillingResponseCodes {
 	BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED,
 	BILLING_RESPONSE_RESULT_ITEM_NOT_OWNED;
 	
-	public static BillingResponseCodes getCode(int val){
-		return BillingResponseCodes.values()[val];
+	public static IAPResponseCodes getCode(int val){
+		return IAPResponseCodes.values()[val];
 	}
 }

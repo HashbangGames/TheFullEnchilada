@@ -33,7 +33,7 @@ public class Enchilada extends UnityPlayerNativeActivity{
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		GoogleIAPResponseHandler.handleOnActivityResult(requestCode,resultCode,data, mEnchiladaIAP.GetVariableStorageMap() );
+		mEnchiladaIAP.handleOnActivityResult(requestCode,resultCode,data);
 	};
 	
 	@Override
@@ -41,16 +41,20 @@ public class Enchilada extends UnityPlayerNativeActivity{
 		mEnchiladaIAP.unbindServiceIntent();		
 	}
 	
-	public void setProductsGoogle(String productList){
+	public void setProducts(String productList){
 		mEnchiladaIAP.setProducts(productList);
 	}
 	
-	public String getProductsDetailsGoogle(){
-		return mEnchiladaIAP.getProductDetails();
+	public String getProductsDetails(){
+		return mEnchiladaIAP.getProductsDetails();
 	}	
 
 	public void purchaseItem(String sku){
 		mEnchiladaIAP.purchaseItem(sku);
+	}
+	
+	public void purchaseItemAndConsume(String sku){
+		mEnchiladaIAP.purchaseItemAndConsume(sku);
 	}
 	
 	public String getPurchases(){
@@ -61,4 +65,7 @@ public class Enchilada extends UnityPlayerNativeActivity{
 		return mEnchiladaIAP.getPurchases(token);
 	}
 
+	public String consumePurchase(String token){
+		return mEnchiladaIAP.consumePurchase(token);
+	}
 }
