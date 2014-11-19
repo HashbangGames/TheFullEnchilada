@@ -104,25 +104,28 @@ namespace com.hbg.thefullenchilada
 
         #endregion
 
-
         #region JNI Callbacks
         public void OnPurchaseItem( string response )
         {
 #if !UNITY_EDITOR && UNITY_ANDROID
-            JSONObject responseObject = new JSONObject( response );
-            bool success;
-            Boolean.TryParse( responseObject.getString( "Success" ), out success );
-            EnchiladaEvent.SendEvent( EnchiladaEvent.EventTypes.PURCHASE_ITEM, success, response );
+            using( JSONObject responseObject = new JSONObject( response ) )
+            {
+                bool success;
+                Boolean.TryParse( responseObject.getString( "Success" ), out success );
+                EnchiladaEvent.SendEvent( EnchiladaEvent.EventTypes.PURCHASE_ITEM, success, response );
+            }
 #endif
         }
 
         public void OnConsumeFailed( string response )
         {
 #if !UNITY_EDITOR && UNITY_ANDROID
-            JSONObject responseObject = new JSONObject( response );
-            bool success;
-            Boolean.TryParse( responseObject.getString( "Success" ), out success );
-            EnchiladaEvent.SendEvent( EnchiladaEvent.EventTypes.CONSUME_FAILED, success, response );
+            using( JSONObject responseObject = new JSONObject( response ) )
+            {
+                bool success;
+                Boolean.TryParse( responseObject.getString( "Success" ), out success );
+                EnchiladaEvent.SendEvent( EnchiladaEvent.EventTypes.CONSUME_FAILED, success, response );
+            }
 #endif
         }
 
