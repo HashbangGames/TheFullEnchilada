@@ -102,6 +102,34 @@ namespace com.hbg.thefullenchilada
             }
         }
 
+        public static void ConsumePurchase( string purchaseToken, Action<bool, string> callback )
+        {
+            string response = string.Empty;
+#if !UNITY_EDITOR && UNITY_ANDROID
+            response = Enchilada.ConsumePurchase( purchaseToken );
+            using( JSONObject jResponseObject = new JSONObject( response ) )
+            {
+                bool success;
+                Boolean.TryParse( jResponseObject.getString( "Success" ), out success );
+                callback( success, response );
+            }
+#endif
+        }
+
+        public static void GetPurchases( Action<bool, string> callback )
+        {
+            string response = string.Empty;
+#if !UNITY_EDITOR && UNITY_ANDROID
+            response = Enchilada.GetPurchases();
+            using( JSONObject jResponseObject = new JSONObject( response ) )
+            {
+                bool success;
+                Boolean.TryParse( jResponseObject.getString( "Success" ), out success );
+                callback( success, response );
+            }
+#endif
+        }
+
         #endregion
 
         #region JNI Callbacks

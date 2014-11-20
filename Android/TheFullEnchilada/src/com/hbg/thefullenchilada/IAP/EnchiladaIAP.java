@@ -2,6 +2,7 @@ package com.hbg.thefullenchilada.IAP;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -28,7 +29,7 @@ import android.util.Log;
 
 public class EnchiladaIAP {
 	private final String TAG = "Unity Enchilada";
-	private Map<String, Object> mVariableStorage;
+	private Map<String, Object> mVariableStorage = new HashMap<String,Object>();
 
 	private Bundle mQuerySkus;
 	private Bundle mSkuDetails;
@@ -238,58 +239,60 @@ public class EnchiladaIAP {
 	}
 	
 	public void handleOnActivityResult(int requestCode, int resultCode, Intent data){
+		ResponseObject rObject = new ResponseObject(); 
 		int rCodeComparer = (Integer) mVariableStorage.get("PurchaseRequestCode");
+		
 		if (requestCode == rCodeComparer) {
-			
 			mVariableStorage.remove("PurchaseRequestCode");
-			String developerPayload = data.getStringExtra("developerPayload");
-			String storedDeveloperPayload = (String) mVariableStorage.get("DeveloperPayload");
-			Log.i(TAG,developerPayload);
-			Log.i(TAG,storedDeveloperPayload);
-			if( developerPayload == storedDeveloperPayload ){
-				int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
-				String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
-				String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
-				if (resultCode == android.app.Activity.RESULT_OK) {
-				   try {
-					  ResponseObject rObject = new ResponseObject(); 
-				      JSONObject jo = new JSONObject(purchaseData);
-				      jo.put("RESPONSE_CODE", responseCode);
-				      jo.put("INAPP_DATA_SIGNATURE", dataSignature);
-				      
-				      rObject.put("Success", true);
-				      rObject.put("PurchaseData", jo);
-				      
-				      if(mVariableStorage.containsKey("AutoConsumeProduct")){
-				    	  mVariableStorage.remove("AutoConsumeProduct");
-				    	  String purchaseToken = jo.get("purchaseToken").toString();
-				    	  JSONObject consumeResult = new JSONObject(consumePurchase(purchaseToken));
-				    	  if( consumeResult.getBoolean("Success") ){
-				    		  UnityPlayer.UnitySendMessage("EnchiladaManager", "OnPurchaseItem", rObject.toString());
-				    	  }else{
-				    		  UnityPlayer.UnitySendMessage("EnchiladaManager", "OnConsumeFailed", rObject.toString());
-				    	  }
-				      }else{
-				    	  UnityPlayer.UnitySendMessage("EnchiladaManager", "OnPurchaseItem", rObject.toString());
-				      }
-				      
-				    }
-				    catch (JSONException e) {
-				       e.printStackTrace();
-				       ResponseObject rObject = new ResponseObject();
-				       try{
-				    	   rObject.put("Success", false);
-				    	   rObject.put("Error", e.getMessage());
-				    	   UnityPlayer.UnitySendMessage("EnchiladaManager", "OnPurchaseItem", rObject.toString());
-				       }catch(JSONException je){
-				    	   je.printStackTrace();
-				       }
-				    }
+			
+			if (resultCode == android.app.Activity.RESULT_OK) {
+				try {
+					int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
+					IAPResponseCodes billingResponse = IAPResponseCodes.getCode( responseCode );
+					if(handleResponseCode(billingResponse)){
+
+						String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
+						String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
+				   
+						JSONObject jo = new JSONObject(purchaseData);
+						jo.put("RESPONSE_CODE", responseCode);
+						jo.put("INAPP_DATA_SIGNATURE", dataSignature);
+						rObject.put("Success", true);
+						rObject.put("PurchaseData", jo);
+
+						if(mVariableStorage.containsKey("AutoConsumeProduct")){
+							mVariableStorage.remove("AutoConsumeProduct");
+							String purchaseToken = jo.get("purchaseToken").toString();
+							JSONObject consumeResult = new JSONObject(consumePurchase(purchaseToken));
+							if( consumeResult.getBoolean("Success") ){
+								UnityPlayer.UnitySendMessage("EnchiladaManager", "OnPurchaseItem", rObject.toString());
+							}else{
+								UnityPlayer.UnitySendMessage("EnchiladaManager", "OnConsumeFailed", rObject.toString());
+							}
+						}else{
+							UnityPlayer.UnitySendMessage("EnchiladaManager", "OnPurchaseItem", rObject.toString());
+						}						
+						
+					}else{
+						//TODO: Handled failed billing responses.
+					}
+
+				} catch (JSONException e) {
+					e.printStackTrace();
+					try{
+						rObject.put("Success", false);
+						rObject.put("Error", e.getMessage());
+						UnityPlayer.UnitySendMessage("EnchiladaManager", "OnPurchaseItem", rObject.toString());
+					}catch(JSONException je){
+						je.printStackTrace();
+					}
 				}
-				
 			}else{
-				Log.i(TAG,"Developer Payload mismatch.");
+				//TODO: Error handling.
+				//RESULT_CANCELED
+				Log.i(TAG, "Something went wrong, Activity Result was not ok.");
 			}
+			
 		}else{
 			Log.i(TAG,"Request code mismatch");
 		}		
